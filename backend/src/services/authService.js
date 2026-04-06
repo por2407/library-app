@@ -1,0 +1,35 @@
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { cfg } = require('../config/env');
+const { findUserByEmail, createUser, findUserById } = require('../models/authModel');
+
+exports.registerUser = async(user, email, password) => {
+    const checkUser = await findUserByEmail(email);
+    if (checkUser) {
+        throw new Error('User already exists');
+    }
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    await createUser(user, email, hashedPassword);
+    return;
+}
+
+exports.loginUser = async(email, password) => {
+    const user = await findUserByEmail(email);
+    if (!user) {
+        throw new Error('Invalid email or password');
+    }
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+        throw new Error('Invalid email or password');
+    }
+    const token = jwt.sign({ id: user.id }, cfg.jwtSecret, { expiresIn: cfg.jwtExpiresIn });
+    return token;
+};
+
+exports.getUserById = async(id) => {
+    const user = await findUserById(id);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    return user;
+};
