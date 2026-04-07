@@ -6,7 +6,9 @@ const { findUserByEmail, createUser, findUserById } = require('../models/authMod
 exports.registerUser = async(user, email, password) => {
     const checkUser = await findUserByEmail(email);
     if (checkUser) {
-        throw new Error('User already exists');
+        const error = new Error('User already exists');
+        error.status = 409;
+        throw error;
     }
     const hashedPassword = await bcryptjs.hash(password, 10);
     await createUser(user, email, hashedPassword);

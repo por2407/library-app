@@ -12,10 +12,95 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role          @default(USER)
+  borrows      Borrow[]
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
 }
+
+model Book {
+  id              String         @id @default(uuid())
+  title           String
+  isbn            String         @unique
+  description     String?
+  coverUrl        String?
+  totalCopies     Int            @default(1)
+  availableCopies Int            @default(1)
+  authors         BookAuthor[]
+  categories      BookCategory[]
+  borrows         Borrow[]
+  reservations    Reservation[]
+  createdAt       DateTime       @default(now())
+}
+
+model Author {
+  id        String       @id @default(uuid())
+  name      String
+  books     BookAuthor[]
+  createdAt DateTime     @default(now())
+}
+
+model BookAuthor {
+  bookId   String
+  authorId String
+  book     Book   @relation(fields: [bookId], references: [id])
+  author   Author @relation(fields: [authorId], references: [id])
+
+  @@id([bookId, authorId])
+}
+
+model Category {
+  id        String         @id @default(uuid())
+  name      String         @unique
+  books     BookCategory[]
+  createdAt DateTime       @default(now())
+}
+
+model BookCategory {
+  bookId     String
+  categoryId String
+  book       Book     @relation(fields: [bookId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([bookId, categoryId])
+}
+
+enum BorrowStatus {
+  BORROWED
+  RETURNED
+}
+
+model Borrow {
+  id         String       @id @default(uuid())
+  userId     String
+  bookId     String
+  borrowDate DateTime     @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  status     BorrowStatus @default(BORROWED)
+  user       User         @relation(fields: [userId], references: [id])
+  book       Book         @relation(fields: [bookId], references: [id])
+  createdAt  DateTime     @default(now())
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model Reservation {
+  id          String            @id @default(uuid())
+  userId      String
+  bookId      String
+  reserveDate DateTime          @default(now())
+  status      ReservationStatus @default(PENDING)
+  user        User              @relation(fields: [userId], references: [id])
+  book        Book              @relation(fields: [bookId], references: [id])
+  createdAt   DateTime          @default(now())
+}
+

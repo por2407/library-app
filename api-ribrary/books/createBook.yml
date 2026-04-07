@@ -1,0 +1,26 @@
+info:
+  name: createBook
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:3000/books/
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Clean Code",
+        "isbn": "978-0132350884",
+        "description": "หนังสือสอนการเขียนโค้ดที่ดี อ่านง่าย และดูแลรักษาง่าย",
+        "coverUrl": "https://example.com/images/clean-code.jpg",
+        "totalCopies": 5,
+        "availableCopies": 5
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
