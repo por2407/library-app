@@ -1,5 +1,11 @@
 const { asyncHandler } = require("../utils/asyncHandler");
-const { createBookService, getBooksService, editBookService } = require("../services/bookService");
+const {
+  createBookService,
+  getBooksService,
+  getBooksByIdService,
+  editBookService,
+  delBookService,
+} = require("../services/bookService");
 
 exports.createBook = asyncHandler(async (req, res, next) => {
   const book = await createBookService(req.body);
@@ -17,6 +23,15 @@ exports.getBooks = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.getBooksById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const book = await getBooksByIdService(id);
+  return res.status(200).json({
+    message: "Book retrieved successfully",
+    data: book,
+  });
+});
+
 exports.editBook = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const book = await editBookService(id, req.body);
@@ -27,3 +42,11 @@ exports.editBook = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.delBook = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  await delBookService(id);
+
+  return res.status(200).json({
+    message: "Book deleted successfully",
+  });
+});
