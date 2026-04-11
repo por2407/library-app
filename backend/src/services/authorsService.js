@@ -1,9 +1,17 @@
-const {getAuthors, createAuthor} = require("../models/authorModel");
+const {
+  getAuthors,
+  addAuthors,
+  addAuthorsByBookId,
+} = require("../models/authorsModel");
 
 exports.getAuthorsService = async () => {
   return getAuthors();
 };
 
 exports.addAuthorsService = async (name) => {
-  return createAuthor(name);
+  return addAuthors(name);
+};
+
+exports.addAuthorsByBookIdService = async (bookId, authId) => {
+  return addAuthorsByBookId(bookId, authId);
 };

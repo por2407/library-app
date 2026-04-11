@@ -11,3 +11,12 @@ exports.createCategory = async (name) => {
     data: { name },
   });
 };
+
+exports.addCategoriesByBookId = async (bookId, catId) => {
+  return prisma.bookcategory.create({
+    data: {
+      bookId,
+      catId,
+    },
+  });
+};

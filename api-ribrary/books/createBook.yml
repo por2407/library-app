@@ -10,12 +10,12 @@ http:
     type: json
     data: |-
       {
-        "title": "You Don't Know JS",
-        "isbn": "978-1491904244",
-        "description": "เจาะลึก JavaScript ตั้งแต่ core mechanics ไปจนถึง async และ performance",
-        "coverUrl": "https://example.com/images/ydkjs.jpg",
-        "totalCopies": 6,
-        "availableCopies": 5
+        "title": "Design Patterns",
+        "isbn": "978-0201633610",
+        "description": "หนังสือ Gang of Four รวม pattern การออกแบบซอฟต์แวร์ที่ใช้งานได้จริง",
+        "coverUrl": "https://example.com/images/design-patterns.jpg",
+        "totalCopies": 4,
+        "availableCopies": 4
       }
   auth: inherit
 

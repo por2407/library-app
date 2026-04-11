@@ -17,3 +17,11 @@ exports.addAuthors = asyncHandler(async (req, res, next) => {
     data: author,
   });
 });
+
+exports.addAuthorByBookId = asyncHandler(async (req, res, next) => {
+  const { bookId, authId } = req.body;
+  await addAuthorsByBookIdService(bookId, authId);
+  return res.status(200).json({
+    message: "Author added to book successfully"
+  });
+});

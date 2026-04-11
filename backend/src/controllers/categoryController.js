@@ -2,6 +2,7 @@ const { asyncHandler } = require("../utils/asyncHandler");
 const {
   getCategoryService,
   createCategoryService,
+  addCategoriesByBookIdService,
 } = require("../services/categoryService");
 
 exports.getCategories = asyncHandler(async (req, res, next) => {
@@ -18,5 +19,13 @@ exports.addCategories = asyncHandler(async (req, res, next) => {
   return res.status(200).json({
     message: "Category added successfully",
     data: category,
+  });
+});
+
+exports.addCategoriesByBookId = asyncHandler(async (req, res, next) => {
+  const { bookId, catId } = req.body;
+  await addCategoriesByBookIdService(bookId, catId);
+  return res.status(200).json({
+    message: "Category added to book successfully"
   });
 });

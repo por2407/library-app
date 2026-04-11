@@ -9,3 +9,12 @@ exports.addAuthors = async (name) => {
     data: { name },
   });
 };
+
+exports.addAuthorsByBookId = async (bookId, authId) => {
+  return prisma.bookauthors.create({
+    data: {
+      bookId,
+      authId,
+    },
+  });
+}
