@@ -1,5 +1,9 @@
 const {asyncHandler} = require("../utils/asyncHandler");
-const {getAuthorsService, addAuthorsService} = require("../services/authorsService");
+const {
+  getAuthorsService,
+  addAuthorsService,
+  addAuthorsByBookIdService,
+} = require("../services/authorsService");
 
 exports.getAuthors = asyncHandler(async (req, res, next) => {
   const authors = await getAuthorsService();
@@ -18,10 +22,10 @@ exports.addAuthors = asyncHandler(async (req, res, next) => {
   });
 });
 
-exports.addAuthorByBookId = asyncHandler(async (req, res, next) => {
-  const { bookId, authId } = req.body;
-  await addAuthorsByBookIdService(bookId, authId);
+exports.addAuthorsByBookId = asyncHandler(async (req, res, next) => {
+  const { bookId, authorId } = req.body;
+  await addAuthorsByBookIdService(bookId, authorId);
   return res.status(200).json({
-    message: "Author added to book successfully"
+    message: "Author added to book successfully",
   });
 });

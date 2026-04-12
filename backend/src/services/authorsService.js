@@ -12,6 +12,6 @@ exports.addAuthorsService = async (name) => {
   return addAuthors(name);
 };
 
-exports.addAuthorsByBookIdService = async (bookId, authId) => {
-  return addAuthorsByBookId(bookId, authId);
+exports.addAuthorsByBookIdService = async (bookId, authorId) => {
+  return addAuthorsByBookId(bookId, authorId);
 };

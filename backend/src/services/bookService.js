@@ -14,6 +14,8 @@ const {
   checkReservation,
   reserveBook,
   cancelReservation,
+  hisBorrow,
+  hisBorrowAll,
 } = require("../models/bookModel");
 
 exports.createBookService = async (data) => {
@@ -36,14 +38,15 @@ exports.delBookService = async (id) => {
   return delBook(id);
 };
 
-exports.borrowsBookService = async (id, userId, dueDate) => {
+exports.borrowsBookService = async (id, userId) => {
   await prisma.$transaction(async (tx) => {
     const isAvailable = await checkAvailableCopies(id, tx);
     if (!isAvailable) {
       throw new Error("No available copies for this book");
     }
+    const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
     await createBorrow(id, userId, dueDate, tx);
-    const book = await getBooksById(id);
+    const book = await getBooksById(id, tx);
     const availableCopies = book.availableCopies - 1;
     await decrementCopies(id, availableCopies, tx);
   });
@@ -53,21 +56,35 @@ exports.returnBookService = async (id) => {
   return prisma.$transaction(async (tx) => {
     const borrow = await returnBook(id, tx);
     const bookId = borrow.bookId;
-    const book = await getBooksById(bookId);
+    const book = await getBooksById(bookId, tx);
     const availableCopies = book.availableCopies + 1;
     await incrementCopies(bookId, availableCopies, tx);
     const reservation = await checkReservation(bookId, tx);
     if (reservation) {
-      await createBorrow(bookId, reservation.userId, reservation.dueDate, tx);
+      const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+      await createBorrow(bookId, reservation.userId, dueDate, tx);
       await decrementCopies(bookId, availableCopies - 1, tx);
     }
   });
 };
 
-exports.reserveBookService = async (bookId, userId, dueDate) => {
-  return reserveBook(bookId, userId, dueDate);
+exports.reserveBookService = async (bookId, userId) => {
+  return reserveBook(bookId, userId);
 };
 
 exports.cancelReservationService = async (bookId, userId) => {
   return cancelReservation(bookId, userId);
+};
+
+exports.historyBorrowService = async (userId) => {
+  return hisBorrow(userId);
+};
+
+exports.historyBorrowAllService = async () => {
+  return hisBorrowAll();
+};
+
+
+exports.historyBorrowAllService = async () => {
+  return hisBorrowAll();
 };

@@ -23,8 +23,8 @@ exports.addCategories = asyncHandler(async (req, res, next) => {
 });
 
 exports.addCategoriesByBookId = asyncHandler(async (req, res, next) => {
-  const { bookId, catId } = req.body;
-  await addCategoriesByBookIdService(bookId, catId);
+  const { bookId, categoryId } = req.body;
+  await addCategoriesByBookIdService(bookId, categoryId);
   return res.status(200).json({
     message: "Category added to book successfully"
   });

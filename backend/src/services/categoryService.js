@@ -1,17 +1,18 @@
 const {
-  getCategoryByName,
+  getCategories,
   createCategory,
   addCategoriesByBookId,
 } = require("../models/categoryModel");
 
-exports.getCategoryService = async (name) => {
-  return getCategoryByName(name);
+exports.getCategoryService = async () => {
+  return getCategories();
 };
 
 exports.createCategoryService = async (name) => {
   return createCategory(name);
 };
 
-exports.addCategoriesByBookIdService = async (bookId, catId) => {
-  return addCategoriesByBookId(bookId, catId);
+exports.addCategoriesByBookIdService = async (bookId, categoryId) => {
+  return addCategoriesByBookId(bookId, categoryId);
 };
+

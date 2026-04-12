@@ -12,8 +12,8 @@ exports.getBooks = async () => {
   return prisma.book.findMany();
 };
 
-exports.getBooksById = async (id) => {
-  return prisma.book.findUnique({
+exports.getBooksById = async (id, tx = prisma) => {
+  return tx.book.findUnique({
     where: { id },
   });
 };
@@ -87,16 +87,29 @@ exports.checkReservation = async (bookId, tx = prisma) => {
   return null;
 };
 
-exports.reserveBook = async (bookId, userId, dueDate) => {
+exports.reserveBook = async (bookId, userId) => {
   return prisma.reservation.create({
-    data: { bookId, userId, dueDate },
+    data: { bookId, userId },
   });
 };
 
 exports.cancelReservation = async (bookId, userId) => {
-  return prisma.reservation.update({
+  return prisma.reservation.updateMany({
     where: { bookId, userId, status: "PENDING" },
     data: { status: "CANCELLED" },
+  });
+};
+
+exports.hisBorrow = async (userId) => {
+  return prisma.borrow.findMany({
+    where: {userId},
+    include: { book: true },
+  })
+}
+
+exports.hisBorrowAll = async () => {
+  return prisma.borrow.findMany({
+    include: { book: true, user: true },
   });
 };
 

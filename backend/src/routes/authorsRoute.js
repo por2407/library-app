@@ -1,12 +1,14 @@
-const { router } = require("express").Router();
+const router = require("express").Router();
 const {
   getAuthors,
   addAuthors,
   addAuthorsByBookId,
 } = require("../controllers/authorsController");
+const { authMiddleware, roleMiddleware } = require("../middlewares/authMiddleware");
 
 router
   .get("/", getAuthors)
-  .post("/", addAuthors)
-  .post("/add", addAuthorsByBookId);
+  .post("/", authMiddleware, roleMiddleware(["ADMIN"]), addAuthors)
+  .post("/add", authMiddleware, roleMiddleware(["ADMIN"]), addAuthorsByBookId);
 module.exports = router;
+

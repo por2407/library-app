@@ -24,7 +24,7 @@ exports.loginUser = async(email, password) => {
     if (!isMatch) {
         throw new Error('Invalid email or password');
     }
-    const token = jwt.sign({ id: user.id }, cfg.jwtSecret, { expiresIn: cfg.jwtExpiresIn });
+    const token = jwt.sign({ id: user.id, role: user.role }, cfg.jwtSecret, { expiresIn: cfg.jwtExpiresIn });
     return token;
 };
 

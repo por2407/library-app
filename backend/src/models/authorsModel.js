@@ -1,4 +1,4 @@
-const prisma = require("../prismaClient");
+const prisma = require("../config/prisma");
 
 exports.getAuthors = async () => {
   return prisma.author.findMany();
@@ -10,11 +10,8 @@ exports.addAuthors = async (name) => {
   });
 };
 
-exports.addAuthorsByBookId = async (bookId, authId) => {
-  return prisma.bookauthors.create({
-    data: {
-      bookId,
-      authId,
-    },
+exports.addAuthorsByBookId = async (bookId, authorId) => {
+  return prisma.bookAuthor.create({
+    data: { bookId, authorId },
   });
-}
+};

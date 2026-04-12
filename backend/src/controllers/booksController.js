@@ -9,6 +9,9 @@ const {
   borrowsBookService,
   returnBookService,
   reserveBookService,
+  historyBorrowService,
+  historyBorrowAllService,
+  cancelReservationService,
 } = require("../services/bookService");
 
 exports.createBook = asyncHandler(async (req, res, next) => {
@@ -58,8 +61,7 @@ exports.delBook = asyncHandler(async (req, res, next) => {
 exports.borrowsBook = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { id: userId } = req.user;
-  const { dueDate } = req.body;
-  await borrowsBookService(id, userId, dueDate);
+  await borrowsBookService(id, userId);
   return res.status(200).json({
     message: "Book borrowed successfully",
   });
@@ -76,8 +78,8 @@ exports.returnBook = asyncHandler(async (req, res, next) => {
 
 exports.reserveBook = asyncHandler(async (req, res, next) => {
   const { id: userId } = req.user;
-  const { bookId, dueDate } = req.body;
-  await reserveBookService(bookId, userId, dueDate);
+  const { bookId } = req.body;
+  await reserveBookService(bookId, userId);
   return res.status(200).json({
     message: "Book reserved successfully",
   });
@@ -89,5 +91,22 @@ exports.cancelReservation = asyncHandler(async (req, res, next) => {
   await cancelReservationService(bookId, userId);
   return res.status(200).json({
     message: "Book reservation cancelled successfully",
+  });
+});
+
+exports.historyBorrow = asyncHandler(async (req, res, next) => {
+  const { id: userId } = req.user;
+  const history = await historyBorrowService(userId);
+  return res.status(200).json({
+    message: "Borrow history retrieved successfully",
+    data: history,
+  });
+});
+
+exports.historyBorrowAll = asyncHandler(async (req, res, next) => {
+  const history = await historyBorrowAllService();
+  return res.status(200).json({
+    message: "All borrow history retrieved successfully",
+    data: history,
   });
 });

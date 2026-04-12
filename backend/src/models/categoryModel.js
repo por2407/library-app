@@ -1,5 +1,9 @@
 const prisma = require("../config/prisma");
 
+exports.getCategories = async () => {
+  return prisma.category.findMany();
+};
+
 exports.getCategoryByName = async (name) => {
   return prisma.category.findUnique({
     where: { name },
@@ -12,11 +16,9 @@ exports.createCategory = async (name) => {
   });
 };
 
-exports.addCategoriesByBookId = async (bookId, catId) => {
-  return prisma.bookcategory.create({
-    data: {
-      bookId,
-      catId,
-    },
+exports.addCategoriesByBookId = async (bookId, categoryId) => {
+  return prisma.bookCategory.create({
+    data: { bookId, categoryId },
   });
 };
+
