@@ -16,6 +16,24 @@ services:
       - ./backend:/app
       - /app/node_modules
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerFile.yml
+    container_name: library-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    # environment:
+    #   - VITE_API_URL=http://backend:3000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
   postgres:
     image: postgres:16-alpine
     container_name: library-postgres

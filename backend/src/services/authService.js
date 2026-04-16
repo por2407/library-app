@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const { cfg } = require('../config/env');
 const { findUserByEmail, createUser, findUserById } = require('../models/authModel');
 
-exports.registerUser = async(user, email, password) => {
+exports.registerUser = async(name, email, password) => {
     const checkUser = await findUserByEmail(email);
     if (checkUser) {
         const error = new Error('User already exists');
@@ -11,7 +11,7 @@ exports.registerUser = async(user, email, password) => {
         throw error;
     }
     const hashedPassword = await bcryptjs.hash(password, 10);
-    await createUser(user, email, hashedPassword);
+    await createUser(name, email, hashedPassword);
     return;
 }
 
