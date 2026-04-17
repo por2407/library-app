@@ -1,6 +1,22 @@
 import { useAuthStore } from "../stores/auth-store";
+import { authApi } from "../api/auth-api";
+import { useNavigate } from "react-router-dom";
 export default function TopNavBar() {
-  const { user } = useAuthStore();
+  const { user, clearUser } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try{
+      await authApi.logout();
+      clearUser();
+      navigate("/login");
+    }catch(err : unknown) {
+      alert(
+        (err as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "เกิดข้อผิดพลาดในการออกจากระบบ",
+      );
+    }
+  };
 
   return (
     <nav className="bg-gray-800 p-4">
@@ -21,12 +37,12 @@ export default function TopNavBar() {
               >
                 {user.name}
               </a>
-              <a
-                href="/logout"
+              <button
+                onClick={handleLogout}
                 className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               >
                 Logout
-              </a>
+              </button>
             </>
           ) : (
             <a

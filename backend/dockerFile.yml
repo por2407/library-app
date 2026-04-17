@@ -8,6 +8,10 @@ RUN npm install
 
 COPY . .
 
+RUN rm .env
+
+ENV DATABASE_URL="postgresql://dummy"
+
 RUN npx prisma generate
 
 EXPOSE 3000

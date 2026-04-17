@@ -9,11 +9,12 @@ export const authApi = {
       password,
     });
   },
-  async login(email: string, password: string) {
-    return api.post("/auth/login", {
+  async login(email: string, password: string): Promise<User> {
+    const response = await api.post("/auth/login", {
       email,
       password,
     });
+    return response.data.data;
   },
   async me(): Promise<User> {
     const response = await api.get("/auth/me");

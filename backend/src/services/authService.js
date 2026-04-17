@@ -25,7 +25,7 @@ exports.loginUser = async(email, password) => {
         throw new Error('Invalid email or password');
     }
     const token = jwt.sign({ id: user.id, role: user.role }, cfg.jwtSecret, { expiresIn: cfg.jwtExpiresIn });
-    return token;
+    return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
 };
 
 exports.getUserById = async(id) => {

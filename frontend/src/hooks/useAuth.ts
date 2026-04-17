@@ -19,7 +19,7 @@ export const useAuth = () => {
         const userData = await authApi.me();
         setUser(userData);
       } catch (error) {
-        // ถ้า me ล้มเหลว แสดงว่าไม่ได้ login หรือ token หมดอายุ
+        // ถ้า me ล้มเหลว (401) แสดงว่าไม่ได้ login หรือ token หมดอายุ
         setUser(null);
       } finally {
         setLoading(false);

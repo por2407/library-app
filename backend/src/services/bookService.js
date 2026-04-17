@@ -17,13 +17,39 @@ const {
   hisBorrow,
   hisBorrowAll,
 } = require("../models/bookModel");
+const redisClient = require("../config/redis");
 
 exports.createBookService = async (data) => {
   return createBook(data);
 };
 
 exports.getBooksService = async () => {
-  return getBooks();
+  const cacheKey = "books:all";
+  
+  try {
+    if (redisClient.isReady) {
+      const cachedBooks = await redisClient.get(cacheKey);
+      if (cachedBooks) {
+        return JSON.parse(cachedBooks);
+      }
+    }
+  } catch (err) {
+    console.error("Redis get error:", err);
+  }
+
+  const books = await getBooks();
+
+  try {
+    if (redisClient.isReady) {
+      await redisClient.set(cacheKey, JSON.stringify(books), {
+        EX: 600, // Cache for 600 seconds (10 minutes)
+      });
+    }
+  } catch (err) {
+    console.error("Redis set error:", err);
+  }
+
+  return books;
 };
 
 exports.getBooksByIdService = async (id) => {

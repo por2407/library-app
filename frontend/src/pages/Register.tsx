@@ -2,8 +2,10 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 import { authApi } from "../api/auth-api";
+import { useRequireGuest } from "../hooks/useRequireGuest";
 
 export default function Register() {
+  useRequireGuest();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

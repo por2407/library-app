@@ -12,15 +12,17 @@ exports.createUser = asyncHandler(async (req, res, next) => {
 
 exports.loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
-  const token = await loginUser(email, password);
+  const { token, user } = await loginUser(email, password);
   res.cookie("token", token, {
-    httpOnly: true,
+    httpOnly: cfg.nodeEnv === "prod",
     secure: cfg.nodeEnv === "prod",
-    sameSite: "strict",
+    sameSite: "lax",
+    path: "/",
     maxAge: 24 * 60 * 60 * 1000, // 1 day
   });
   return res.status(200).json({
     message: "User logged in successfully",
+    data: user,
   });
 });
 
@@ -30,6 +32,18 @@ exports.me = asyncHandler(async (req, res, next) => {
   return res.status(200).json({
     message: "User data retrieved successfully",
     data: user,
+  });
+});
+
+exports.logoutUser = asyncHandler(async (req, res, next) => {
+  res.clearCookie("token", {
+    httpOnly: cfg.nodeEnv === "prod",
+    secure: cfg.nodeEnv === "prod",
+    sameSite: "lax",
+    path: "/",
+  });
+  return res.status(200).json({
+    message: "User logged out successfully",
   });
 });
 

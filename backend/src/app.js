@@ -6,6 +6,7 @@ const booksRoute = require('./routes/booksRoute');
 const categoryRoute = require('./routes/categoryRoute');
 const authorsRoute = require('./routes/authorsRoute');
 const adminRoute = require('./routes/adminRoutes');
+require('./config/redis'); // Initialize Redis client
 
 
 

@@ -2,9 +2,11 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/auth-api";
 import { useAuthStore } from "../stores/auth-store";
+import { useRequireGuest } from "../hooks/useRequireGuest";
 
 
 export default function Login() {
+  useRequireGuest();
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
 
@@ -23,8 +25,7 @@ export default function Login() {
     }
 
     try {
-      await authApi.login(email, password);
-      const user = await authApi.me();
+      const user = await authApi.login(email, password);
       setUser(user);
       navigate("/");
     } catch (err: unknown) {
