@@ -6,11 +6,11 @@ export default function TopNavBar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    try{
+    try {
       await authApi.logout();
       clearUser();
       navigate("/login");
-    }catch(err : unknown) {
+    } catch (err: unknown) {
       alert(
         (err as { response?: { data?: { message?: string } } }).response?.data
           ?.message || "เกิดข้อผิดพลาดในการออกจากระบบ",
@@ -31,12 +31,29 @@ export default function TopNavBar() {
           </a>
           {user ? (
             <>
-              <a
-                href="/profile"
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-              >
-                {user.name}
-              </a>
+              {user.role.toLowerCase() === "admin" ? (
+                <>
+                  <a
+                    href="/admin/management"
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    การจัดการหนังสือ
+                  </a>
+                  <a
+                    href="/admin/history"
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    ประวัติการยืม
+                  </a>
+                </>
+              ) : (
+                <a
+                  href="/profile"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  {user.name}
+                </a>
+              )}
               <button
                 onClick={handleLogout}
                 className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"

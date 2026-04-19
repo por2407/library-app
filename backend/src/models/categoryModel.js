@@ -22,3 +22,8 @@ exports.addCategoriesByBookId = async (bookId, categoryId) => {
   });
 };
 
+exports.deleteCategory = async (id) => {
+  await prisma.bookCategory.deleteMany({ where: { categoryId: id } });
+  return prisma.category.delete({ where: { id } });
+};
+

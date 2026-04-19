@@ -3,6 +3,7 @@ const {
   getCategoryService,
   createCategoryService,
   addCategoriesByBookIdService,
+  deleteCategoryService,
 } = require("../services/categoryService");
 
 exports.getCategories = asyncHandler(async (req, res, next) => {
@@ -27,5 +28,13 @@ exports.addCategoriesByBookId = asyncHandler(async (req, res, next) => {
   await addCategoriesByBookIdService(bookId, categoryId);
   return res.status(200).json({
     message: "Category added to book successfully"
+  });
+});
+
+exports.deleteCategory = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  await deleteCategoryService(id);
+  return res.status(200).json({
+    message: "Category deleted successfully"
   });
 });

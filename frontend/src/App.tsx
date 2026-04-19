@@ -1,12 +1,10 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
-
+import DetailBook from "./pages/DetailBook";
+import Management from "./pages/admin/management";
 
 import { useAuth } from "./hooks/useAuth";
 
@@ -26,7 +24,15 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <Profile />,
-  }
+  },
+  {
+    path: "/book/:id",
+    element: <DetailBook />,
+  },
+  {
+    path: "/admin/management",
+    element: <Management />,
+  },
 ]);
 
 function AppContent() {
@@ -47,4 +53,4 @@ function App() {
   return <AppContent />;
 }
 
-export default App
+export default App;

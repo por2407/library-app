@@ -15,3 +15,8 @@ exports.addAuthorsByBookId = async (bookId, authorId) => {
     data: { bookId, authorId },
   });
 };
+
+exports.deleteAuthor = async (id) => {
+  await prisma.bookAuthor.deleteMany({ where: { authorId: id } });
+  return prisma.author.delete({ where: { id } });
+};

@@ -2,6 +2,7 @@ const {
   getCategories,
   createCategory,
   addCategoriesByBookId,
+  deleteCategory,
 } = require("../models/categoryModel");
 
 exports.getCategoryService = async () => {
@@ -14,5 +15,9 @@ exports.createCategoryService = async (name) => {
 
 exports.addCategoriesByBookIdService = async (bookId, categoryId) => {
   return addCategoriesByBookId(bookId, categoryId);
+};
+
+exports.deleteCategoryService = async (id) => {
+  return deleteCategory(id);
 };
 

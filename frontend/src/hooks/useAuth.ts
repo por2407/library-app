@@ -3,14 +3,14 @@ import { useAuthStore } from "../stores/auth-store";
 import { authApi } from "../api/auth-api";
 
 export const useAuth = () => {
-  const { user, setUser } = useAuthStore();
+  const { user, isLogin, setUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         // ถ้ามี user ใน store แล้ว ไม่ต้องเรียก me อีก
-        if (user) {
+        if (user || !isLogin) {
           setLoading(false);
           return;
         }

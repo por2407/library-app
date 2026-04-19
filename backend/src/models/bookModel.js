@@ -1,10 +1,48 @@
 const prisma = require("../config/prisma");
 
 exports.createBook = async (data) => {
-  const { title, isbn, description, coverUrl, totalCopies, availableCopies } =
-    data;
+  const { title, isbn, description, coverUrl, totalCopies, availableCopies, authors, categories } = data;
+  
+  const authorConnectors = [];
+  if (authors && Array.isArray(authors)) {
+     for (let authorName of authors) {
+         let authorNameTrimmed = authorName.trim();
+         if (!authorNameTrimmed) continue;
+         let existingAuthor = await prisma.author.findFirst({ where: { name: authorNameTrimmed } });
+         if (!existingAuthor) {
+             existingAuthor = await prisma.author.create({ data: { name: authorNameTrimmed } });
+         }
+         authorConnectors.push({ author: { connect: { id: existingAuthor.id } } });
+     }
+  }
+
+  const categoryConnectors = [];
+  if (categories && Array.isArray(categories)) {
+      for (let catName of categories) {
+          let catNameTrimmed = catName.trim();
+          if(!catNameTrimmed) continue;
+          categoryConnectors.push({
+              category: {
+                  connectOrCreate: {
+                      where: { name: catNameTrimmed },
+                      create: { name: catNameTrimmed }
+                  }
+              }
+          });
+      }
+  }
+
   return prisma.book.create({
-    data: { title, isbn, description, coverUrl, totalCopies, availableCopies },
+    data: { 
+        title, 
+        isbn, 
+        description, 
+        coverUrl, 
+        totalCopies, 
+        availableCopies: availableCopies !== undefined ? availableCopies : totalCopies,
+        authors: { create: authorConnectors },
+        categories: { create: categoryConnectors }
+    },
   });
 };
 
@@ -28,9 +66,23 @@ exports.editBook = async (id, data) => {
 };
 
 exports.delBook = async (id) => {
-  return prisma.book.delete({
-    where: { id },
-  });
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // 1. ลบความสัมพันธ์ของผู้แต่งและหมวดหมู่ก่อน
+      await tx.bookAuthor.deleteMany({ where: { bookId: id } });
+      await tx.bookCategory.deleteMany({ where: { bookId: id } });
+      
+      // 2. ลบประวัติการยืมและการจอง
+      await tx.borrow.deleteMany({ where: { bookId: id } });
+      await tx.reservation.deleteMany({ where: { bookId: id } });
+      
+      // 3. ลบตัวเล่มหนังสือ (ใช้ deleteMany เพื่อไม่ให้เกิด error กรณีไม่พบข้อมูล)
+      return await tx.book.deleteMany({ where: { id } });
+    });
+  } catch (error) {
+    console.error("Error in delBook model:", error);
+    throw error;
+  }
 };
 
 exports.checkAvailableCopies = async (id, tx = prisma) => {

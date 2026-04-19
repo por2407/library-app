@@ -30,6 +30,7 @@ exports.getBooksService = async () => {
     if (redisClient.isReady) {
       const cachedBooks = await redisClient.get(cacheKey);
       if (cachedBooks) {
+        console.log("Cache hit");
         return JSON.parse(cachedBooks);
       }
     }
@@ -41,6 +42,7 @@ exports.getBooksService = async () => {
 
   try {
     if (redisClient.isReady) {
+      console.log("Cache miss");
       await redisClient.set(cacheKey, JSON.stringify(books), {
         EX: 600, // Cache for 600 seconds (10 minutes)
       });
@@ -57,11 +59,15 @@ exports.getBooksByIdService = async (id) => {
 };
 
 exports.editBookService = async (id, data) => {
-  return editBook(id, data);
+  const result = await editBook(id, data);
+  await clearBooksCache();
+  return result;
 };
 
 exports.delBookService = async (id) => {
-  return delBook(id);
+  const result = await delBook(id);
+  await clearBooksCache();
+  return result;
 };
 
 exports.borrowsBookService = async (id, userId) => {
@@ -105,11 +111,6 @@ exports.cancelReservationService = async (bookId, userId) => {
 exports.historyBorrowService = async (userId) => {
   return hisBorrow(userId);
 };
-
-exports.historyBorrowAllService = async () => {
-  return hisBorrowAll();
-};
-
 
 exports.historyBorrowAllService = async () => {
   return hisBorrowAll();

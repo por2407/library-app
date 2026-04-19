@@ -2,6 +2,7 @@ const {
   getAuthors,
   addAuthors,
   addAuthorsByBookId,
+  deleteAuthor,
 } = require("../models/authorsModel");
 
 exports.getAuthorsService = async () => {
@@ -14,4 +15,8 @@ exports.addAuthorsService = async (name) => {
 
 exports.addAuthorsByBookIdService = async (bookId, authorId) => {
   return addAuthorsByBookId(bookId, authorId);
+};
+
+exports.deleteAuthorService = async (id) => {
+  return deleteAuthor(id);
 };

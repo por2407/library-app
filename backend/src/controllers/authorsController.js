@@ -3,6 +3,7 @@ const {
   getAuthorsService,
   addAuthorsService,
   addAuthorsByBookIdService,
+  deleteAuthorService,
 } = require("../services/authorsService");
 
 exports.getAuthors = asyncHandler(async (req, res, next) => {
@@ -27,5 +28,13 @@ exports.addAuthorsByBookId = asyncHandler(async (req, res, next) => {
   await addAuthorsByBookIdService(bookId, authorId);
   return res.status(200).json({
     message: "Author added to book successfully",
+  });
+});
+
+exports.deleteAuthor = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  await deleteAuthorService(id);
+  return res.status(200).json({
+    message: "Author deleted successfully",
   });
 });
