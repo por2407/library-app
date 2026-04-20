@@ -14,6 +14,10 @@ export const booksApi = {
         const response = await api.delete(`/books/delete/${id}`);
         return response.data.message;
     },
+    async updateBook(id: string, book: Omit<Book, 'id' | 'createdAt' | 'availableCopies'> & { authors?: string[], categories?: string[] }) {
+        const response = await api.put(`/books/edit/${id}`, book);
+        return response.data.data;
+    },
     async getAuthors() {
         const response = await api.get("/authors");
         return response.data.data;

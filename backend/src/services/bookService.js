@@ -19,18 +19,28 @@ const {
 } = require("../models/bookModel");
 const redisClient = require("../config/redis");
 
+const clearBooksCache = async () => {
+  try {
+    const cacheKey = "books:all";
+    await redisClient.del(cacheKey);
+  } catch (err) {
+    console.error("Redis clear error:", err);
+  }
+};
+
 exports.createBookService = async (data) => {
-  return createBook(data);
+  const result = await createBook(data);
+  await clearBooksCache();
+  return result;
 };
 
 exports.getBooksService = async () => {
   const cacheKey = "books:all";
-  
+
   try {
     if (redisClient.isReady) {
       const cachedBooks = await redisClient.get(cacheKey);
       if (cachedBooks) {
-        console.log("Cache hit");
         return JSON.parse(cachedBooks);
       }
     }
@@ -42,9 +52,8 @@ exports.getBooksService = async () => {
 
   try {
     if (redisClient.isReady) {
-      console.log("Cache miss");
       await redisClient.set(cacheKey, JSON.stringify(books), {
-        EX: 600, // Cache for 600 seconds (10 minutes)
+        EX: 300, // Cache for 300 seconds (5 minutes)
       });
     }
   } catch (err) {
@@ -82,10 +91,11 @@ exports.borrowsBookService = async (id, userId) => {
     const availableCopies = book.availableCopies - 1;
     await decrementCopies(id, availableCopies, tx);
   });
+  await clearBooksCache();
 };
 
 exports.returnBookService = async (id) => {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const borrow = await returnBook(id, tx);
     const bookId = borrow.bookId;
     const book = await getBooksById(bookId, tx);
@@ -97,7 +107,10 @@ exports.returnBookService = async (id) => {
       await createBorrow(bookId, reservation.userId, dueDate, tx);
       await decrementCopies(bookId, availableCopies - 1, tx);
     }
+    return { bookId };
   });
+  await clearBooksCache();
+  return result;
 };
 
 exports.reserveBookService = async (bookId, userId) => {

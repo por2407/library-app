@@ -47,21 +47,75 @@ exports.createBook = async (data) => {
 };
 
 exports.getBooks = async () => {
-  return prisma.book.findMany();
+  return prisma.book.findMany({
+    include: {
+      authors: { include: { author: true } },
+      categories: { include: { category: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 };
 
 exports.getBooksById = async (id, tx = prisma) => {
   return tx.book.findUnique({
     where: { id },
+    include: {
+      authors: { include: { author: true } },
+      categories: { include: { category: true } },
+    },
   });
 };
 
 exports.editBook = async (id, data) => {
-  const { title, isbn, description, coverUrl, totalCopies, availableCopies } =
-    data;
-  return prisma.book.update({
-    where: { id },
-    data: { title, isbn, description, coverUrl, totalCopies, availableCopies },
+  const { title, isbn, description, coverUrl, totalCopies, availableCopies, authors, categories } = data;
+
+  return await prisma.$transaction(async (tx) => {
+    // 1. Update basic fields
+    const book = await tx.book.update({
+      where: { id },
+      data: { 
+        title, 
+        isbn, 
+        description, 
+        coverUrl, 
+        totalCopies, 
+        availableCopies: availableCopies !== undefined ? availableCopies : undefined 
+      },
+    });
+
+    // 2. Update Authors if provided
+    if (authors !== undefined) {
+      await tx.bookAuthor.deleteMany({ where: { bookId: id } });
+      const authorConnectors = [];
+      for (let authorName of authors) {
+        let existingAuthor = await tx.author.findFirst({ where: { name: authorName.trim() } });
+        if (!existingAuthor) {
+          existingAuthor = await tx.author.create({ data: { name: authorName.trim() } });
+        }
+        authorConnectors.push({ authorId: existingAuthor.id, bookId: id });
+      }
+      if (authorConnectors.length > 0) {
+        await tx.bookAuthor.createMany({ data: authorConnectors });
+      }
+    }
+
+    // 3. Update Categories if provided
+    if (categories !== undefined) {
+      await tx.bookCategory.deleteMany({ where: { bookId: id } });
+      const categoryConnectors = [];
+      for (let catName of categories) {
+        let existingCat = await tx.category.findFirst({ where: { name: catName.trim() } });
+        if (!existingCat) {
+          existingCat = await tx.category.create({ data: { name: catName.trim() } });
+        }
+        categoryConnectors.push({ categoryId: existingCat.id, bookId: id });
+      }
+      if (categoryConnectors.length > 0) {
+        await tx.bookCategory.createMany({ data: categoryConnectors });
+      }
+    }
+
+    return book;
   });
 };
 

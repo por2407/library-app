@@ -10,6 +10,8 @@ export interface Book {
     totalCopies: number;
     availableCopies: number;
     createdAt: string;
+    authors?: { author: { id: string, name: string } }[];
+    categories?: { category: { id: string, name: string } }[];
 }
 
 interface BookState {

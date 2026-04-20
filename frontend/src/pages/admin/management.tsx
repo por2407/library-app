@@ -3,10 +3,22 @@ import { useBooksStore } from "../../stores/books-store";
 import { useState } from "react";
 import ModalAddBook from "../../components/ModalAddBook";
 import { booksApi } from "../../api/books-api";
+import { type Book } from "../../stores/books-store";
 
 export default function Management() {
   const { books, setBooks } = useBooksStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+
+  const handleEditBook = (book: Book) => {
+    setEditingBook(book);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingBook(null);
+  };
 
   const handleDeleteBook = async (id: string) => {
     if (!confirm("คุณแน่ใจหรือไม่ที่จะลบหนังสือเล่มนี้?")) return;
@@ -28,7 +40,10 @@ export default function Management() {
         </h1>
         <div className="flex justify-end mb-4">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setEditingBook(null);
+              setIsModalOpen(true);
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
           >
             เพิ่มหนังสือ
@@ -41,6 +56,9 @@ export default function Management() {
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     ชื่อหนังสือ
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    ผู้แต่ง
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     ISBN
@@ -74,6 +92,18 @@ export default function Management() {
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
                         {book.title}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-600 flex flex-wrap gap-1">
+                        {book.authors?.map((a) => (
+                          <span
+                            key={a.author.id}
+                            className="bg-gray-100 px-1 rounded"
+                          >
+                            {a.author.name}
+                          </span>
+                        )) || "-"}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -118,7 +148,10 @@ export default function Management() {
                       })}
                     </td>
                     <td className="px-6 py-4 text-center space-x-4 whitespace-nowrap font-medium">
-                      <button className="text-indigo-600 hover:text-indigo-900 transition-colors">
+                      <button
+                        onClick={() => handleEditBook(book)}
+                        className="text-indigo-600 hover:text-indigo-900 transition-colors"
+                      >
                         แก้ไข
                       </button>
                       <button
@@ -149,7 +182,8 @@ export default function Management() {
 
       <ModalAddBook
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
+        editingBook={editingBook}
       />
     </>
   );
