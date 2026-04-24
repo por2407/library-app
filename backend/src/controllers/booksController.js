@@ -12,6 +12,7 @@ const {
   historyBorrowService,
   historyBorrowAllService,
   cancelReservationService,
+  getReservationByUser,
 } = require("../services/bookService");
 
 exports.createBook = asyncHandler(async (req, res, next) => {
@@ -104,9 +105,22 @@ exports.historyBorrow = asyncHandler(async (req, res, next) => {
 });
 
 exports.historyBorrowAll = asyncHandler(async (req, res, next) => {
-  const history = await historyBorrowAllService();
+  const { page = 1, limit = 10 } = req.query;
+  const result = await historyBorrowAllService(
+    parseInt(page),
+    parseInt(limit),
+  );
   return res.status(200).json({
     message: "All borrow history retrieved successfully",
-    data: history,
+    data: result.history,
+    pagination: result.pagination,
+  });
+});
+exports.getReservationByUser = asyncHandler(async (req, res, next) => {
+  const { id: userId } = req.user;
+  const reservation = await getReservationByUser(userId);
+  return res.status(200).json({
+    message: "Reservation history retrieved successfully",
+    data: reservation,
   });
 });

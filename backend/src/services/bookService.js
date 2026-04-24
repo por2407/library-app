@@ -16,6 +16,8 @@ const {
   cancelReservation,
   hisBorrow,
   hisBorrowAll,
+  countHisBorrowAll,
+  findReservationByUser,
 } = require("../models/bookModel");
 const redisClient = require("../config/redis");
 
@@ -28,12 +30,23 @@ const clearBooksCache = async () => {
   }
 };
 
+const clearBookByIdCache = async (id) => {
+  try {
+    const cacheKey = `books:id:${id}`;
+    await redisClient.del(cacheKey);
+  } catch (err) {
+    console.error("Redis clear error:", err);
+  }
+};
+
+// เพิ่มหนังสือ (admin)
 exports.createBookService = async (data) => {
   const result = await createBook(data);
   await clearBooksCache();
   return result;
 };
 
+// หาหนังสือทั้งหมด
 exports.getBooksService = async () => {
   const cacheKey = "books:all";
 
@@ -63,23 +76,49 @@ exports.getBooksService = async () => {
   return books;
 };
 
+// หาหนังสือด้วย ID
 exports.getBooksByIdService = async (id) => {
-  return getBooksById(id);
+  const cacheKey = `books:id:${id}`;
+  try {
+    if (redisClient.isReady) {
+      const cachedBooks = await redisClient.get(cacheKey);
+      if (cachedBooks) {
+        return JSON.parse(cachedBooks);
+      }
+    }
+  } catch (err) {
+    console.error("Redis get error:", err);
+  }
+  const book = await getBooksById(id);
+  try {
+    if (redisClient.isReady) {
+      await redisClient.set(cacheKey, JSON.stringify(book), {
+        EX: 300,
+      });
+    }
+  } catch (err) {
+    console.error("Redis set error:", err);
+  }
+  return book;
 };
 
+// แก้ไขหนังสือ (admin)
 exports.editBookService = async (id, data) => {
   const result = await editBook(id, data);
   await clearBooksCache();
   return result;
 };
 
+// ลบหนังสือ (admin)
 exports.delBookService = async (id) => {
   const result = await delBook(id);
   await clearBooksCache();
   return result;
 };
 
+// ยืมหนังสือ
 exports.borrowsBookService = async (id, userId) => {
+  clearBookByIdCache(id);
   await prisma.$transaction(async (tx) => {
     const isAvailable = await checkAvailableCopies(id, tx);
     if (!isAvailable) {
@@ -94,10 +133,11 @@ exports.borrowsBookService = async (id, userId) => {
   await clearBooksCache();
 };
 
-exports.returnBookService = async (id) => {
+// คืนหนังสือ
+exports.returnBookService = async (bookId, userId) => {
+  clearBookByIdCache(bookId);
   const result = await prisma.$transaction(async (tx) => {
-    const borrow = await returnBook(id, tx);
-    const bookId = borrow.bookId;
+    await returnBook(bookId, userId, tx);
     const book = await getBooksById(bookId, tx);
     const availableCopies = book.availableCopies + 1;
     await incrementCopies(bookId, availableCopies, tx);
@@ -113,18 +153,68 @@ exports.returnBookService = async (id) => {
   return result;
 };
 
+// จองหนังสือ
 exports.reserveBookService = async (bookId, userId) => {
+  await clearBookByIdCache(bookId);
   return reserveBook(bookId, userId);
 };
 
+// ยกเลิกการจองหนังสือ
 exports.cancelReservationService = async (bookId, userId) => {
+  await clearBookByIdCache(bookId);
   return cancelReservation(bookId, userId);
 };
 
+// หาประวัติการยืมของฉัน
 exports.historyBorrowService = async (userId) => {
   return hisBorrow(userId);
 };
 
-exports.historyBorrowAllService = async () => {
-  return hisBorrowAll();
+// หาประวัติการยืมทั้งหมด (pagination)
+exports.historyBorrowAllService = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+  const cacheKey = `history:all:p${page}:l${limit}`;
+
+  try {
+    if (redisClient.isReady) {
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        return JSON.parse(cachedData);
+      }
+    }
+  } catch (err) {
+    console.error("Redis get error:", err);
+  }
+
+  const [history, total] = await Promise.all([
+    hisBorrowAll(skip, limit),
+    countHisBorrowAll(),
+  ]);
+
+  const result = {
+    history,
+    pagination: {
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+
+  try {
+    if (redisClient.isReady) {
+      await redisClient.set(cacheKey, JSON.stringify(result), {
+        EX: 300,
+      });
+    }
+  } catch (err) {
+    console.error("Redis set error:", err);
+  }
+
+  return result;
+};
+
+// หาการจองของฉัน
+exports.getReservationByUser = async (userId) => {
+  return findReservationByUser(userId);
 };

@@ -5,6 +5,9 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import DetailBook from "./pages/DetailBook";
 import Management from "./pages/admin/management";
+import { useReservations } from "./hooks/useReservations";
+import { useBorrows } from "./hooks/useBorrows";
+import History from "./pages/admin/History";
 
 import { useAuth } from "./hooks/useAuth";
 
@@ -33,10 +36,16 @@ const router = createBrowserRouter([
     path: "/admin/management",
     element: <Management />,
   },
+  {
+    path: "/admin/history",
+    element: <History />,
+  },
 ]);
 
 function AppContent() {
   const { loading } = useAuth();
+  useReservations();
+  useBorrows();
 
   if (loading) {
     return (
