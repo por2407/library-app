@@ -1,5 +1,5 @@
 const { asyncHandler } = require("../utils/asyncHandler");
-const { registerUser, loginUser, getUserById } = require("../services/authService");
+const { registerUser, loginUser, getUserById, updateUserProfile } = require("../services/authService");
 const { cfg } = require("../config/env");
 
 exports.createUser = asyncHandler(async (req, res, next) => {
@@ -46,5 +46,16 @@ exports.logoutUser = asyncHandler(async (req, res, next) => {
     message: "User logged out successfully",
   });
 });
+
+exports.updateProfile = asyncHandler(async (req, res, next) => {
+  const { id } = req.user;
+  const { name, email } = req.body;
+  const user = await updateUserProfile(id, name, email);
+  return res.status(200).json({
+    message: "Profile updated successfully",
+    data: user,
+  });
+});
+
 
 

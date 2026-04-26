@@ -5,9 +5,11 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import DetailBook from "./pages/DetailBook";
 import Management from "./pages/admin/management";
+import History from "./pages/History";
+
 import { useReservations } from "./hooks/useReservations";
 import { useBorrows } from "./hooks/useBorrows";
-import History from "./pages/admin/History";
+import HistoryAdmin from "./pages/admin/History";
 
 import { useAuth } from "./hooks/useAuth";
 
@@ -38,6 +40,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/history",
+    element: <HistoryAdmin />,
+  },
+  {
+    path: "/history",
     element: <History />,
   },
 ]);

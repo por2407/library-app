@@ -1,7 +1,7 @@
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { cfg } = require('../config/env');
-const { findUserByEmail, createUser, findUserById } = require('../models/authModel');
+const { findUserByEmail, createUser, findUserById, updateUser } = require('../models/authModel');
 
 exports.registerUser = async(name, email, password) => {
     const checkUser = await findUserByEmail(email);
@@ -34,4 +34,19 @@ exports.getUserById = async(id) => {
         throw new Error('User not found');
     }
     return user;
+};
+
+exports.updateUserProfile = async(id, name, email) => {
+    // Check if email is already taken by another user
+    if (email) {
+        const existingUser = await findUserByEmail(email);
+        if (existingUser && existingUser.id !== id) {
+            const error = new Error('Email already in use');
+            error.status = 400;
+            throw error;
+        }
+    }
+
+    const updatedUser = await updateUser(id, { name, email });
+    return updatedUser;
 };

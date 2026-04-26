@@ -23,4 +23,9 @@ export const authApi = {
   async logout() {
     return api.post("/auth/logout");
   },
+  async updateProfile(name: string, email: string): Promise<User> {
+    const response = await api.put("/auth/profile", { name, email });
+    return response.data.data;
+  },
 };
+

@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: dockerFile.yml
+      dockerfile: Dockerfile
     container_name: library-backend
     restart: unless-stopped
     ports:
@@ -14,6 +14,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -21,7 +23,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: dockerFile.yml
+      dockerfile: Dockerfile
     container_name: library-frontend
     restart: unless-stopped
     ports:
@@ -69,6 +71,25 @@ services:
       timeout: 3s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: library-rabbitmq
+    restart: unless-stopped
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:

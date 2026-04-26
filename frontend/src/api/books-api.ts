@@ -83,6 +83,12 @@ export const booksApi = {
   },
   async historyBorrowAll(page: number = 1, limit: number = 10) {
     const response = await api.get(
+      `/books/borrows/history-all?page=${page}&limit=${limit}`,
+    );
+    return response.data;
+  },
+  async historyBorrowByUser(page: number = 1, limit: number = 10) {
+    const response = await api.get(
       `/books/borrows/history?page=${page}&limit=${limit}`,
     );
     return response.data;

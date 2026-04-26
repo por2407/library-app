@@ -237,11 +237,19 @@ exports.cancelReservation = async (bookId, userId) => {
   });
 };
 
-exports.hisBorrow = async (userId) => {
+exports.hisBorrow = async (userId, skip = 0, take = 10) => {
   return prisma.borrow.findMany({
     where: { userId },
-    include: { book: true },
+    include: { book: true, user: true },
+    orderBy: { borrowDate: "desc" },
+    skip: parseInt(skip),
+    take: parseInt(take),
   });
+};
+
+
+exports.countHisBorrow = async (userId) => {
+  return prisma.borrow.count({ where: { userId } });
 };
 
 exports.hisBorrowAll = async (skip = 0, take = 10) => {
@@ -261,5 +269,13 @@ exports.findReservationByUser = async (userId) => {
   return prisma.reservation.findMany({
     where: { userId, status: "PENDING" },
     include: { book: true },
+  });
+};
+
+exports.getMyBorrows = async (userId) => {
+  return prisma.borrow.findMany({
+    where: { userId },
+    include: { book: true },
+    orderBy: { borrowDate: "desc" },
   });
 };

@@ -15,11 +15,14 @@ const {
   reserveBook,
   cancelReservation,
   hisBorrow,
+  countHisBorrow,
   hisBorrowAll,
   countHisBorrowAll,
   findReservationByUser,
+  getMyBorrows,
 } = require("../models/bookModel");
 const redisClient = require("../config/redis");
+const { publishMessage } = require("../config/rabbitmq");
 
 const clearBooksCache = async () => {
   try {
@@ -119,7 +122,7 @@ exports.delBookService = async (id) => {
 // ยืมหนังสือ
 exports.borrowsBookService = async (id, userId) => {
   clearBookByIdCache(id);
-  await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const isAvailable = await checkAvailableCopies(id, tx);
     if (!isAvailable) {
       throw new Error("No available copies for this book");
@@ -129,7 +132,24 @@ exports.borrowsBookService = async (id, userId) => {
     const book = await getBooksById(id, tx);
     const availableCopies = book.availableCopies - 1;
     await decrementCopies(id, availableCopies, tx);
+
+    // Get user info for email
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true },
+    });
+
+    return { book, user, dueDate };
   });
+
+  // Publish to RabbitMQ after transaction succeeds
+  await publishMessage("email_notifications", {
+    email: result.user.email,
+    userName: result.user.name,
+    bookTitle: result.book.title,
+    dueDate: result.dueDate,
+  });
+
   await clearBooksCache();
 };
 
@@ -166,8 +186,21 @@ exports.cancelReservationService = async (bookId, userId) => {
 };
 
 // หาประวัติการยืมของฉัน
-exports.historyBorrowService = async (userId) => {
-  return hisBorrow(userId);
+exports.historyBorrowService = async (userId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+  const [history, total] = await Promise.all([
+    hisBorrow(userId, skip, limit),
+    countHisBorrow(userId),
+  ]);
+  return {
+    history,
+    pagination: {
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 // หาประวัติการยืมทั้งหมด (pagination)
@@ -217,4 +250,8 @@ exports.historyBorrowAllService = async (page = 1, limit = 10) => {
 // หาการจองของฉัน
 exports.getReservationByUser = async (userId) => {
   return findReservationByUser(userId);
+};
+
+exports.getMyBorrowsService = async (userId) => {
+  return getMyBorrows(userId);
 };

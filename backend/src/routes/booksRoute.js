@@ -12,6 +12,7 @@ const {
   historyBorrow,
   historyBorrowAll,
   getReservationByUser,
+  getMyBorrows,
 } = require("../controllers/booksController");
 const {
   authMiddleware,
@@ -20,9 +21,10 @@ const {
 
 router
   // Static routes first to avoid collision with /:id
-  .get("/borrows/my", authMiddleware, historyBorrow)
+  .get("/borrows/my", authMiddleware, getMyBorrows)
+  .get("/borrows/history", authMiddleware, historyBorrow)
   .get(
-    "/borrows/history",
+    "/borrows/history-all",
     authMiddleware,
     roleMiddleware(["ADMIN"]),
     historyBorrowAll,
